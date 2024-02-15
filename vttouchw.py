@@ -28,7 +28,7 @@ class VTTOUCHW:
         self.timeout = 0.1
         self.delay_before_tx = 0.005
         self.command_list = ['standby','smart','away','min','med','max','recircmin','recircmed','recircmax']
-        self.Rx = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'
+        self.Rx = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
 
     def commands(self):
         '''
@@ -75,7 +75,7 @@ class VTTOUCHW:
 
     def standby(self):
         '''
-        Standby (STB) - Stops ERV ventilation motor and closes internal dampers to outside ducts
+        Standby (STB) - Stops ERV ventilation motor and closes internal dampers to outside ducts.
         '''
         self.state = 'standby'
         self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x01\x08\x20\x01\x00\x49\x04'
@@ -83,7 +83,7 @@ class VTTOUCHW:
 
     def smart(self):
         '''
-        Smart (SMT) - Operates according to outdoor temperature and indoor humidity
+        Smart (SMT) - Operates automatically based on outdoor temperature and indoor humidity.
         '''
         self.state = 'smart'
         self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x11\x08\x20\x01\x00\x39\x04'
@@ -91,7 +91,7 @@ class VTTOUCHW:
 
     def min(self):
         '''
-        Continuous Minimum - Continuous exchange ventilation at selected speed
+        Continuous Minimum - Continuous exchange ventilation at selected speed.
         '''
         self.state = 'min'
         self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x09\x08\x20\x01\x00\x41\x04'
@@ -99,7 +99,7 @@ class VTTOUCHW:
 
     def med(self):
         '''
-        Continuous Medium - Continuous exchange ventilation at selected speed
+        Continuous Medium - Continuous exchange ventilation at selected speed.
         '''
         self.state = 'med'
         self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0b\x08\x20\x01\x00\x3f\x04'
@@ -107,7 +107,7 @@ class VTTOUCHW:
 
     def max(self):
         '''
-        Continuous Maximum - Continuous exchange ventilation at selected speed
+        Continuous Maximum - Continuous exchange ventilation at selected speed.
         '''
         self.state = 'max'
         self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0a\x08\x20\x01\x00\x40\x04'
@@ -115,7 +115,7 @@ class VTTOUCHW:
 
     def recircmin(self):
         '''
-        Recirculation Minimum - Closes dampers to outside ducts and recirculates air inside the house at MIN speed        
+        Recirculation Minimum - Closes dampers to outside ducts and recirculates air inside house at MIN speed.
         '''
         self.state = 'recircmin'
         self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x05\x08\x20\x01\x00\x45\x04'
@@ -123,7 +123,7 @@ class VTTOUCHW:
 
     def recircmed(self):
         '''
-        Recirculation Medium - Closes dampers to outside ducts and recirculates air inside the house at MED speed
+        Recirculation Medium - Closes dampers to outside ducts and recirculates air inside house at MED speed.
         '''
         self.state = 'recircmed'
         self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x07\x08\x20\x01\x00\x43\x04'
@@ -131,7 +131,7 @@ class VTTOUCHW:
 
     def recircmax(self):
         '''
-        Recirculation Maximum - Closes dampers to outside ducts and recirculates air inside the house at MAX speed
+        Recirculation Maximum - Closes dampers to outside ducts and recirculates air inside house at MAX speed.
         '''
         self.state = 'recircmax'
         self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x06\x08\x20\x01\x00\x44\x04'
@@ -139,7 +139,7 @@ class VTTOUCHW:
 
     def away(self):
         '''
-        Away - 10 minutes outside ventilation / 50 minutes off every hour
+        Away - 10 minutes outside ventilation / 50 minutes off every hour.
         '''
         self.state = 'away'
         self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0f\x08\x20\x01\x00\x3b\x04'
@@ -148,7 +148,7 @@ class VTTOUCHW:
 
 if __name__ == '__main__':
     import sys
-    if len(sys.argv) < 3:  # No commands given
+    if len(sys.argv) < 3:  # No commands or wrong number of arguments
         erv = VTTOUCHW()
         print('Example command-line: python3 vttouchw.py /dev/ttyUSB0 standby')
         erv.commands()

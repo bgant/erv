@@ -61,7 +61,7 @@ class VAUTOW:
             self.ser.write(self.Tx2)  # Send 2nd Data Frame
             self.ser.write(self.Tx3)  # Send 3rd Data Frame
             self.resp = self.ser.read_until(expected=self.Rx3)  # Confirm Success with 3rd Data Frame ERV Response
-            self.status += '.'  # Each dot represents one attempt to read the Rx3 frame
+            self.status += '.'  # Each dot represents one attempt in the while loop
             if self.Rx3.hex() in self.resp.hex():
                 self.status += 'OK'
                 self.ser.close()

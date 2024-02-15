@@ -18,7 +18,7 @@ RS485 Protcol Encoding in bytes:
   MM  Message in Bytes (i.e. 3 bytes of message)
   MM
   MM
-  CS  16-bit CRC Check Sum
+  CS  Check Sum
   04  Frame End
 
 Packet Decoding in Python:
@@ -28,7 +28,7 @@ Packet Decoding in Python:
   unknown  = frame.hex()[6:8]  <-- Always 01
   length   = frame.hex()[8:10]
   message  = frame.hex()[10:10+int(length,16)*2]
-  crc      = frame.hex()[-4:-2]
+  checksum = frame.hex()[-4:-2]
   end      = frame.hex()[-2:]
 
 ~3.5 milliseconds between each call and response frame
