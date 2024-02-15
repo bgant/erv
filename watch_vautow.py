@@ -23,8 +23,8 @@ try:
   
     # Watch frames scroll by...
     while True:
-        frame = ser.read_until(b'\x04')  # Packet Footer is x04
-        #frame = ser.read_until(expected=b'\x04\x00')[:-1]  # Packet Footer is x04
+        frame = ser.read_until(b'\x04')  # Packet Footer is usually x04
+        #frame = ser.read_until(expected=b'\x04\x00')[:-1]  # Packet Footer is usually x04
         if (frame not in skip) and (frame.hex()[0] == '0') and (frame.hex()[1] == '1'):  # Packet Header is x01
             print(frame.hex())
 
