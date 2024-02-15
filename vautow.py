@@ -71,7 +71,7 @@ class VAUTOW:
                 sleep(0.25)
         else:
             self.ser.close()
-            self.output += 'FAILED'
+            self.status += 'FAILED'
             return print(f'{self.status}')
 
     def standby(self):
