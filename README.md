@@ -4,7 +4,7 @@
 
 ## Software
 
-The [vautow.py](vautow.py) and [vttouchw.py](vttouchw.py) Python scripts are written for Linux. Here is a Raspberry Pi example:
+The [vautow.py](vautow.py) and [vttouchw.py](vttouchw.py) Python scripts are written for Linux. Here is an example on a Raspberry Pi:
 ```
 sudo apt install git python3-serial
 git clone --depth=1 https://github.com/bgant/erv
@@ -12,7 +12,7 @@ python3 erv/vautow.py /dev/ttyUSB0 auto
 python3 erv/vautow.py /dev/ttyUSB0 standby
 ```
 
-If you are importing either script as a module, you can use the following syntax:
+If you are importing either script as a Python module, here is a vautow.py example:
 ```python
 import vautow as VAUTOW
 erv = VAUTOW('/dev/ttyUSB0')
@@ -30,6 +30,18 @@ Only one of these wall control devices should be connected to the ERV via [22/4 
 I purchased a cheap generic [USB Logic Analyzer](https://www.amazon.com/gp/product/B077LSG5P2) so that I could see what signals were being sent across the RS485 wires. I watched a few [Sigrok/PulseView](https://sigrok.org/wiki/Main_Page) tutorials on YouTube and used their open-source software along with their open-source **fxlafw** firmware on the Logic Analyzer. I tried different UART [baud rates](https://lucidar.me/en/serialib/most-used-baud-rates-table/) on the D+ signal and it looks like it is 38400: 
 
 ![Image](PulseView_RS485_VAUTOW.png)
+
+Once I knew what the bytes on the wire should look like, I used a [USB-to-RS485](https://www.amazon.com/gp/product/B0BTYKS8LK) adapter to look at the data on Linux (here is a [cheaper adpater](https://www.amazon.com/Industrial-USB-RS485-Converter-Communication/dp/B081MB6PN2) that would also work):
+
+```
+sudo chmod o+rw /dev/ttyUSB0
+stty -F 38400 /dev/ttyUSB0
+hexdump /dev/ttyUSB0
+```
+
+I wrote the [watch_vautow.py](watch_vautow.py) and [watch_vttouchw.py](watch_vttouchw.py) scripts to start isolating which packets are generated for each wall control button push. My notes during this work are in [notes_vautow.txt](notes_vautow.txt) and [notes_vttouchw.txt](notes_vttouchw.txt).
+
+
 
 ## Project Goal
 Due to heavy smoke from wildfires in 2023, I wanted a way to automatically turn off the ERV (to avoid sucking the smoke into the house) if the EPA Air Quality Index (AQI) was too high. I contacted the ERV vendor and they recommended sending a 12V DC (high) signal to the OVR wire on the ERV. This would "Override" the ERV controls and run it at Maximum speed to clear the smoke out of the house...?!? :thinking:
