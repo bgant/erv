@@ -11,7 +11,7 @@ try:
     ser.rs485_mode = serial.rs485.RS485Settings(rts_level_for_tx=False,rts_level_for_rx=True)
 
     # Repeating sequences not related to control signals
-    # You will still see some kind of timing/counter packet every 10 seconds...
+    # You will still see some kind of timing/counter frame every 10 seconds...
     skip = [
         b'\x01\x10\x11\x01\x01\x04\xd9\x04', b'\x01\x10\x11\x01\x01\x05\xd8\x04',
         b'\x01\x11\x10\x01\x01\x04\xd9\x04', b'\x01\x11\x10\x01\x01\x05\xd8\x04',
@@ -23,9 +23,9 @@ try:
   
     # Watch frames scroll by...
     while True:
-        frame = ser.read_until(b'\x04')  # Packet Footer is usually x04
-        #frame = ser.read_until(expected=b'\x04\x00')[:-1]  # Packet Footer is usually x04
-        if (frame not in skip) and (frame.hex()[0] == '0') and (frame.hex()[1] == '1'):  # Packet Header is x01
+        frame = ser.read_until(b'\x04')  # Frame Footer is usually x04
+        #frame = ser.read_until(expected=b'\x04\x00')[:-1]  # Frame Footer is usually x04
+        if (frame not in skip) and (frame.hex()[0] == '0') and (frame.hex()[1] == '1'):  # Frame Header is x01
             print(frame.hex())
 
 except Exception or KeyboardInterrupt:
