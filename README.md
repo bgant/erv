@@ -1,6 +1,6 @@
 # Energy Recovery Ventilator (ERV) Control via Python
 
-*DISCLAIMER: This script does not replace the VAUTOW or VTTOUCHW control devices. One of them is still required to be connected to the ERV device and can be used along with these scripts.*
+*IMPORTANT: These Python scripts DO NOT replace the wall control device. A wall control device is still required to be connected to the ERV.*
 
 ## Software
 
@@ -22,8 +22,13 @@ erv.state
 erv.status
 ```
 
+## Project Goal
+Due to heavy smoke from wildfires in 2023, I wanted a way to automatically turn off the ERV (to avoid pulling smoke into the house) if the [EPA Air Quality Index (AQI)](https://www.airnow.gov/national-maps/) [API](https://docs.airnowapi.org/webservices) value was too high. I contacted the ERV vendor and they recommended sending a 12V DC (high) signal to the OVR wire on the ERV. This would "Override" the ERV controls and run it at Maximum speed to clear the smoke out of the house...?!? :thinking:
+
+I realized this would be a fun project to learn how to view unknown digital signals. Even if I didn't know what the wall control was saying to the ERV, I should be able to isolate which bytes correspond with which button presses, and try sending those same bytes using Python. My end goal is a [MicroPython](https://micropython.org/) device that automatically shuts off the ERV when smoke is detected.
+
 ## Hardware
-I installed a [B180E75RT](https://www.sylvane.com/broan-b180e75rt-ai-series-180-cfm-energy-recovery-ventilator.html) ERV with a [VTTOUCHW](https://www.sylvane.com/broan-vautow-automatic-wall-control-ai-series.html) Touchscreen Wall Control. I later purchased a [VAUTOW](https://www.sylvane.com/broan-vautow-automatic-wall-control-ai-series.html) Automatic Wall Control to compare wall control signals.
+I installed a [B180E75RT](https://www.sylvane.com/broan-b180e75rt-ai-series-180-cfm-energy-recovery-ventilator.html) ERV with a [VTTOUCHW](https://www.sylvane.com/broan-vautow-automatic-wall-control-ai-series.html) Touchscreen Wall Control. I then purchased a [VAUTOW](https://www.sylvane.com/broan-vautow-automatic-wall-control-ai-series.html) Automatic Wall Control to compare wall control signals.
 
 Only one of these wall control devices should be connected to the ERV via [22/4 security cable](https://www.lowes.com/pd/Southwire-1-ft-22-4-Solid-White-Security-Cable/4284059) to the 12V DC, D+, D-, and GND ports on both devices. The D+ and D- ports indicate that they are using [RS485 serial communication](https://en.wikipedia.org/wiki/RS-485) which allows for multiple daisy-chained devices over long lengths of wire to talk to each other.
 
@@ -31,7 +36,7 @@ I purchased a cheap generic [USB Logic Analyzer](https://www.amazon.com/gp/produ
 
 ![Image](PulseView_RS485_VAUTOW.png)
 
-Once I knew what the bytes on the wire should look like, I used a [USB-to-RS485](https://www.amazon.com/gp/product/B0BTYKS8LK) adapter to look at the data on Linux (here is a [cheaper adpater](https://www.amazon.com/Industrial-USB-RS485-Converter-Communication/dp/B081MB6PN2) that would also work):
+Once I knew what the bytes on the wire should look like, I used a [USB-to-RS485](https://www.amazon.com/gp/product/B0BTYKS8LK) adapter daisy-chained to D+, D-, and GND to look at the data on Linux (here is a [cheaper adpater](https://www.amazon.com/Industrial-USB-RS485-Converter-Communication/dp/B081MB6PN2) that would also work):
 
 ```
 sudo chmod o+rw /dev/ttyUSB0
@@ -39,16 +44,9 @@ stty -F 38400 /dev/ttyUSB0
 hexdump /dev/ttyUSB0
 ```
 
-I wrote the [watch_vautow.py](watch_vautow.py) and [watch_vttouchw.py](watch_vttouchw.py) scripts to start isolating which packets are generated for each wall control button push. My notes during this work are in [notes_vautow.txt](notes_vautow.txt) and [notes_vttouchw.txt](notes_vttouchw.txt).
+I wrote the [watch_vautow.py](watch_vautow.py) and [watch_vttouchw.py](watch_vttouchw.py) scripts to isolate which data frames are generated for each wall control button push. My research notes for this work are in [notes_vautow.txt](notes_vautow.txt) and [notes_vttouchw.txt](notes_vttouchw.txt).
 
+![Image](workbench.png)
 
-
-## Project Goal
-Due to heavy smoke from wildfires in 2023, I wanted a way to automatically turn off the ERV (to avoid sucking the smoke into the house) if the EPA Air Quality Index (AQI) was too high. I contacted the ERV vendor and they recommended sending a 12V DC (high) signal to the OVR wire on the ERV. This would "Override" the ERV controls and run it at Maximum speed to clear the smoke out of the house...?!? :thinking:
-
-I realized this would be a fun project to learn how to view digital signals using a cheap Logic Analyzer. Even if I didn't know what the controls were saying to the ERV, I should be able to isolate which RS485 bytes correspond with which button presses, and try sending those same bytes in Python.
-
-
-## Thanks
 
 
