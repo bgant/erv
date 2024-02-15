@@ -11,7 +11,7 @@ try:
     ser.rs485_mode = serial.rs485.RS485Settings(rts_level_for_tx=False,rts_level_for_rx=True)
 
     # Repeating sequences not related to control signals
-    # A lot of random packets that change and are not related to control signals
+    # A lot of random frames that change and are not related to control signals
     skip = [
            b'\x01\x10\x12\x01\x01\x04', b'\x01\x12\x10\x01\x01\x05\xd7\x04',
            b'\x01\x12\x10\x01\x01\x04', b'\x01\x10\x12\x01\x01\x05\xd7\x04',
@@ -37,8 +37,8 @@ try:
   
     # Watch frames scroll by...
     while True:
-        frame = ser.read_until(b'\x04')  # Packet Footer is usually x04
-        if (frame not in skip) and (frame.hex()[0] == '0') and (frame.hex()[1] == '1'):  # Packet Header is x01
+        frame = ser.read_until(b'\x04')  # Frame Footer is usually x04
+        if (frame not in skip) and (frame.hex()[0] == '0') and (frame.hex()[1] == '1'):  # Frame Header is x01
             print(frame.hex())
 
 except Exception or KeyboardInterrupt:
