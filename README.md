@@ -8,6 +8,7 @@ The [vautow.py](vautow.py) and [vttouchw.py](vttouchw.py) Python scripts are wri
 ```
 sudo apt install git python3-serial
 git clone --depth=1 https://github.com/bgant/erv
+python3 erv/vautow.py   <-- Shows example and list of available commands
 python3 erv/vautow.py /dev/ttyUSB0 auto
 python3 erv/vautow.py /dev/ttyUSB0 standby
 ```
@@ -16,6 +17,7 @@ If you are importing either script as a Python module, here is a vautow.py examp
 ```python
 from vautow import VAUTOW
 erv = VAUTOW('/dev/ttyUSB0')
+erv.commands()
 erv.auto()
 erv.standby()
 erv.state
