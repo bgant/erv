@@ -29,6 +29,8 @@ class VTTOUCHW:
         self.delay_before_tx = 0.005
         self.command_list = ['standby','smart','away','min','med','max','recircmin','recircmed','recircmax']
         self.Rx = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
+        self.status = None
+        self.state = None
 
     def commands(self):
         '''

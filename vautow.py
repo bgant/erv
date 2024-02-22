@@ -28,6 +28,8 @@ class VAUTOW:
         self.timeout = 0.1
         self.delay_before_tx = 0.005
         self.command_list = ['standby','auto','turbo','recirc','int','min','med','max']
+        self.state = None
+        self.status = None
 
     def commands(self):
         '''

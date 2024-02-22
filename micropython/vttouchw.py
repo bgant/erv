@@ -24,6 +24,8 @@ class VTTOUCHW:
         self.attempts = 11
         self.command_list = ['standby','smart','away','min','med','max','recircmin','recircmed','recircmax']
         self.Rx = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
+        self.status = None
+        self.state = None
 
     def commands(self):
         '''
@@ -54,7 +56,7 @@ class VTTOUCHW:
             self.sent = self.uart.write(self.Tx)
             #sleep_ms(10)
             self.uart.readinto(self.buffer)
-            print(self.buffer.hex())
+            #print(self.buffer.hex())
             if self.Rx.hex() in self.buffer.hex():
                 self.status += 'OK'
                 self.uart.deinit()
