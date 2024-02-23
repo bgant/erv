@@ -19,13 +19,25 @@ from time import sleep_ms
 
 class VTTOUCHW:
     def __init__(self):
-        self.port = 1
-        self.baudrate = 38400
         self.attempts = 11
-        self.command_list = ['standby','smart','away','min','med','max','recircmin','recircmed','recircmax']
-        self.Rx = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
+        self.command_list = ('standby','smart','away','min','med','max','recircmin','recircmed','recircmax')
+        self.Rx1 = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
         self.status = None
         self.state = None
+
+        # UART Configuration 
+        self.rx = 9
+        self.tx = 10
+        self.uart = UART(1, 38400)
+        self.uart.init(38400, bits=8, parity=None, stop=1, rx=self.rx, tx=self.tx)
+
+    def reset(self):
+        '''
+        Re-initialize RS485 Communication
+        '''
+        self.uart.deinit()
+        self.uart = UART(1, 38400)
+        self.uart.init(38400, bits=8, parity=None, stop=1, rx=self.rx, tx=self.tx) 
 
     def commands(self):
         '''
@@ -38,12 +50,6 @@ class VTTOUCHW:
         '''
         Send command frames to the ERV/HRV over the RS485 wires.
         '''
-        try:
-            self.uart = UART(1, 38400)
-            self.uart.init(38400, bits=8, parity=None, stop=1, rx=8, tx=9)
-        except:
-            print('UART Error')
-
         # May need a few attempts to change the control state...
         # pySerial RS485 support WARNING: This may work unreliably on some serial
         # ports (control signals not synchronized or delayed compared to data). Using
@@ -53,30 +59,29 @@ class VTTOUCHW:
         self.buffer = bytearray(400)
         for i in range(self.attempts):
             self.status += '.'  # Each dot represents one attempt in the while loop
-            self.sent = self.uart.write(self.Tx)
+            print('.', end='')
+            self.sent = self.uart.write(self.Tx1)
             #sleep_ms(10)
             self.uart.readinto(self.buffer)
             #print(self.buffer.hex())
-            if self.Rx.hex() in self.buffer.hex():
+            if self.Rx1.hex() in self.buffer.hex():
                 self.status += 'OK'
-                self.uart.deinit()
-                return print(f'{self.status}')
+                print('OK')
             else:
                 self.buffer[:] = b'\x00' * len(self.buffer)  # Clear buffer
                 sleep_ms(300)
                 # Try again
 
         else:
-            self.uart.deinit()
             self.status += 'FAILED'
-            return print(f'{self.status}')
+            print('FAILED')
 
     def standby(self):
         '''
         Standby (STB) - Stops ERV ventilation motor and closes internal dampers to outside ducts.
         '''
         self.state = 'standby'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x01\x08\x20\x01\x00\x49\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x01\x08\x20\x01\x00\x49\x04'
         self.send_frames()
 
     def smart(self):
@@ -84,7 +89,7 @@ class VTTOUCHW:
         Smart (SMT) - Operates automatically based on outdoor temperature and indoor humidity.
         '''
         self.state = 'smart'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x11\x08\x20\x01\x00\x39\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x11\x08\x20\x01\x00\x39\x04'
         self.send_frames()
 
     def min(self):
@@ -92,7 +97,7 @@ class VTTOUCHW:
         Continuous Minimum - Continuous exchange ventilation at selected speed.
         '''
         self.state = 'min'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x09\x08\x20\x01\x00\x41\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x09\x08\x20\x01\x00\x41\x04'
         self.send_frames() 
 
     def med(self):
@@ -100,7 +105,7 @@ class VTTOUCHW:
         Continuous Medium - Continuous exchange ventilation at selected speed.
         '''
         self.state = 'med'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0b\x08\x20\x01\x00\x3f\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0b\x08\x20\x01\x00\x3f\x04'
         self.send_frames()
 
     def max(self):
@@ -108,7 +113,7 @@ class VTTOUCHW:
         Continuous Maximum - Continuous exchange ventilation at selected speed.
         '''
         self.state = 'max'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0a\x08\x20\x01\x00\x40\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0a\x08\x20\x01\x00\x40\x04'
         self.send_frames()
 
     def recircmin(self):
@@ -116,7 +121,7 @@ class VTTOUCHW:
         Recirculation Minimum - Closes dampers to outside ducts and recirculates air inside house at MIN speed.
         '''
         self.state = 'recircmin'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x05\x08\x20\x01\x00\x45\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x05\x08\x20\x01\x00\x45\x04'
         self.send_frames()
 
     def recircmed(self):
@@ -124,7 +129,7 @@ class VTTOUCHW:
         Recirculation Medium - Closes dampers to outside ducts and recirculates air inside house at MED speed.
         '''
         self.state = 'recircmed'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x07\x08\x20\x01\x00\x43\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x07\x08\x20\x01\x00\x43\x04'
         self.send_frames()
 
     def recircmax(self):
@@ -132,7 +137,7 @@ class VTTOUCHW:
         Recirculation Maximum - Closes dampers to outside ducts and recirculates air inside house at MAX speed.
         '''
         self.state = 'recircmax'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x06\x08\x20\x01\x00\x44\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x06\x08\x20\x01\x00\x44\x04'
         self.send_frames()
 
     def away(self):
@@ -140,6 +145,6 @@ class VTTOUCHW:
         Away - 10 minutes outside ventilation / 50 minutes off every hour.
         '''
         self.state = 'away'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0f\x08\x20\x01\x00\x3b\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0f\x08\x20\x01\x00\x3b\x04'
         self.send_frames() 
 
