@@ -26,8 +26,8 @@ class VTTOUCHW:
         self.state = None
 
         # UART Configuration 
-        self.rx = 9
-        self.tx = 10
+        self.rx = 8
+        self.tx = 9
         self.uart = UART(1, 38400)
         self.uart.init(38400, bits=8, parity=None, stop=1, rx=self.rx, tx=self.tx)
 
@@ -67,11 +67,11 @@ class VTTOUCHW:
             if self.Rx1.hex() in self.buffer.hex():
                 self.status += 'OK'
                 print('OK')
+                break
             else:
                 self.buffer[:] = b'\x00' * len(self.buffer)  # Clear buffer
                 sleep_ms(300)
                 # Try again
-
         else:
             self.status += 'FAILED'
             print('FAILED')
