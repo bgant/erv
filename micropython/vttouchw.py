@@ -22,6 +22,7 @@ class VTTOUCHW:
         self.attempts = 11
         self.command_list = ('standby','smart','away','min','med','max','recircmin','recircmed','recircmax')
         self.Rx1 = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
+        self.buffer = bytearray(400)
         self.status = None
         self.state = None
 
@@ -55,19 +56,17 @@ class VTTOUCHW:
         # delays may be unreliable (varying times, larger than expected) as the OS
         # may not support very fine grained delays.
         self.status = ''
-        self.buffer = bytearray(400)
         for i in range(self.attempts):
             self.status += '.'  # Each dot represents one attempt in the while loop
             print('.', end='')
             self.sent = self.uart.write(self.Tx1)
             self.uart.readinto(self.buffer)
-            #print(self.buffer.hex())
             if self.Rx1 in self.buffer:
                 self.status += 'OK'
                 print('OK')
                 break
             self.buffer[:] = b'\x00' * len(self.buffer)  # Clear buffer
-            sleep_ms(200)
+            sleep_ms(250)
         else:
             self.status += 'FAILED'
             print('FAILED')
