@@ -28,9 +28,9 @@ class VTTOUCHW:
         self.timeout = 0.1
         self.delay_before_tx = 0.005
         self.command_list = ['standby','smart','away','min','med','max','recircmin','recircmed','recircmax']
-        self.Rx1 = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
         self.status = None
         self.state = None
+        self.Rx1 = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
 
     def commands(self):
         '''
@@ -59,15 +59,17 @@ class VTTOUCHW:
         # may not support very fine grained delays.
         self.status = ''
         for i in range(self.attempts):
+            self.status += '.'  # Each dot represents one attempt in the loop
             self.ser.write(self.Tx1)
             self.resp = self.ser.read_until(expected=self.Rx1)  # Confirm Success with ERV Response Frame
-            self.status += '.'  # Each dot represents one attempt in the while loop 
             if self.Rx1 in self.resp:
                 self.status += 'OK'
+                self.ser.close()
                 return print(f'{self.status}')
             sleep(0.25)
         else:
             self.status += 'FAILED'
+            self.ser.close()
             return print(f'{self.status}')
 
     def standby(self):

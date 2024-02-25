@@ -65,10 +65,12 @@ class VAUTOW:
             self.resp = self.ser.read_until(expected=self.Rx3)  # Confirm Success with 3rd Data Frame ERV Response
             if self.Rx3.hex() in self.resp.hex():
                 self.status += 'OK'
+                self.ser.close()
                 return print(f'{self.status}')
             sleep(0.25)
         else:
             self.status += 'FAILED'
+            self.ser.close()
             return print(f'{self.status}')
 
     def standby(self):
