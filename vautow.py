@@ -21,10 +21,10 @@ import serial.rs485
 from time import sleep
 
 class VAUTOW:
-    def __init__(self,port=None):
+    def __init__(self,port='/dev/ttyUSB0'):
         self.port = port
         self.baudrate = 38400
-        self.attempts = 7
+        self.attempts = 8
         self.timeout = 0.1
         self.delay_before_tx = 0.005
         self.command_list = ['standby','auto','turbo','recirc','int','min','med','max']
@@ -56,23 +56,18 @@ class VAUTOW:
         # ports (control signals not synchronized or delayed compared to data). Using
         # delays may be unreliable (varying times, larger than expected) as the OS
         # may not support very fine grained delays.
-        self.count = 0
         self.status = ''
-        while self.count <= self.attempts:
+        for i in range(self.attempts):
+            self.status += '.'  # Each dot represents one attempt in the loop
             self.ser.write(self.Tx1)  # Send 1st Data Frame
             self.ser.write(self.Tx2)  # Send 2nd Data Frame
             self.ser.write(self.Tx3)  # Send 3rd Data Frame
             self.resp = self.ser.read_until(expected=self.Rx3)  # Confirm Success with 3rd Data Frame ERV Response
-            self.status += '.'  # Each dot represents one attempt in the while loop
             if self.Rx3.hex() in self.resp.hex():
                 self.status += 'OK'
-                self.ser.close()
                 return print(f'{self.status}')
-            else:
-                self.count += 1
-                sleep(0.25)
+            sleep(0.25)
         else:
-            self.ser.close()
             self.status += 'FAILED'
             return print(f'{self.status}')
 
@@ -173,7 +168,7 @@ class VAUTOW:
 
 if __name__ == '__main__':
     import sys
-    if len(sys.argv) < 3:  # No commands given
+    if len(sys.argv) < 3:  # No commands or wrong number of arguments
         erv = VAUTOW()
         print('Example command-line: python3 vautow.py /dev/ttyUSB0 standby')
         erv.commands()

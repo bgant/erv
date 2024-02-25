@@ -21,14 +21,14 @@ import serial.rs485
 from time import sleep
 
 class VTTOUCHW:
-    def __init__(self,port=None):
+    def __init__(self,port='/dev/ttyUSB0'):
         self.port = port
         self.baudrate = 38400
         self.attempts = 8
         self.timeout = 0.1
         self.delay_before_tx = 0.005
         self.command_list = ['standby','smart','away','min','med','max','recircmin','recircmed','recircmax']
-        self.Rx = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
+        self.Rx1 = b'\x01\x12\x10\x01\x05\x41\x08\x20\x00\x20\x4f\x04'  # Same ERV response for all control commands
         self.status = None
         self.state = None
 
@@ -57,21 +57,16 @@ class VTTOUCHW:
         # ports (control signals not synchronized or delayed compared to data). Using
         # delays may be unreliable (varying times, larger than expected) as the OS
         # may not support very fine grained delays.
-        self.count = 0
         self.status = ''
-        while self.count <= self.attempts:
-            self.ser.write(self.Tx)
-            self.resp = self.ser.read_until(expected=self.Rx)  # Confirm Success with ERV Response Frame
+        for i in range(self.attempts):
+            self.ser.write(self.Tx1)
+            self.resp = self.ser.read_until(expected=self.Rx1)  # Confirm Success with ERV Response Frame
             self.status += '.'  # Each dot represents one attempt in the while loop 
-            if self.Rx.hex() in self.resp.hex():
+            if self.Rx1 in self.resp:
                 self.status += 'OK'
-                self.ser.close()
                 return print(f'{self.status}')
-            else:
-                self.count += 1
-                sleep(0.25)
+            sleep(0.25)
         else:
-            self.ser.close()
             self.status += 'FAILED'
             return print(f'{self.status}')
 
@@ -80,7 +75,7 @@ class VTTOUCHW:
         Standby (STB) - Stops ERV ventilation motor and closes internal dampers to outside ducts.
         '''
         self.state = 'standby'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x01\x08\x20\x01\x00\x49\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x01\x08\x20\x01\x00\x49\x04'
         self.send_frames()
 
     def smart(self):
@@ -88,7 +83,7 @@ class VTTOUCHW:
         Smart (SMT) - Operates automatically based on outdoor temperature and indoor humidity.
         '''
         self.state = 'smart'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x11\x08\x20\x01\x00\x39\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x11\x08\x20\x01\x00\x39\x04'
         self.send_frames()
 
     def min(self):
@@ -96,7 +91,7 @@ class VTTOUCHW:
         Continuous Minimum - Continuous exchange ventilation at selected speed.
         '''
         self.state = 'min'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x09\x08\x20\x01\x00\x41\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x09\x08\x20\x01\x00\x41\x04'
         self.send_frames() 
 
     def med(self):
@@ -104,7 +99,7 @@ class VTTOUCHW:
         Continuous Medium - Continuous exchange ventilation at selected speed.
         '''
         self.state = 'med'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0b\x08\x20\x01\x00\x3f\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0b\x08\x20\x01\x00\x3f\x04'
         self.send_frames()
 
     def max(self):
@@ -112,7 +107,7 @@ class VTTOUCHW:
         Continuous Maximum - Continuous exchange ventilation at selected speed.
         '''
         self.state = 'max'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0a\x08\x20\x01\x00\x40\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0a\x08\x20\x01\x00\x40\x04'
         self.send_frames()
 
     def recircmin(self):
@@ -120,7 +115,7 @@ class VTTOUCHW:
         Recirculation Minimum - Closes dampers to outside ducts and recirculates air inside house at MIN speed.
         '''
         self.state = 'recircmin'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x05\x08\x20\x01\x00\x45\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x05\x08\x20\x01\x00\x45\x04'
         self.send_frames()
 
     def recircmed(self):
@@ -128,7 +123,7 @@ class VTTOUCHW:
         Recirculation Medium - Closes dampers to outside ducts and recirculates air inside house at MED speed.
         '''
         self.state = 'recircmed'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x07\x08\x20\x01\x00\x43\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x07\x08\x20\x01\x00\x43\x04'
         self.send_frames()
 
     def recircmax(self):
@@ -136,7 +131,7 @@ class VTTOUCHW:
         Recirculation Maximum - Closes dampers to outside ducts and recirculates air inside house at MAX speed.
         '''
         self.state = 'recircmax'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x06\x08\x20\x01\x00\x44\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x06\x08\x20\x01\x00\x44\x04'
         self.send_frames()
 
     def away(self):
@@ -144,7 +139,7 @@ class VTTOUCHW:
         Away - 10 minutes outside ventilation / 50 minutes off every hour.
         '''
         self.state = 'away'
-        self.Tx = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0f\x08\x20\x01\x00\x3b\x04'
+        self.Tx1 = b'\x01\x10\x12\x01\x09\x40\x00\x20\x01\x0f\x08\x20\x01\x00\x3b\x04'
         self.send_frames() 
 
 
@@ -159,8 +154,7 @@ if __name__ == '__main__':
             erv = VTTOUCHW(sys.argv[1])
             func = getattr(erv, sys.argv[2].lower())
             func()  # calls erv.command()
-        except AttributeError as e:
+        except AttributeError:
             print(f'{sys.argv[2]} command not found')
-            #print(e)
             erv.commands()
 
