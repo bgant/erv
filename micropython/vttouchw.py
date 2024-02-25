@@ -35,7 +35,6 @@ class VTTOUCHW:
         '''
         Re-initialize RS485 Communication
         '''
-        self.uart.deinit()
         self.uart = UART(1, 38400)
         self.uart.init(38400, bits=8, parity=None, stop=1, rx=self.rx, tx=self.tx) 
 
@@ -61,17 +60,14 @@ class VTTOUCHW:
             self.status += '.'  # Each dot represents one attempt in the while loop
             print('.', end='')
             self.sent = self.uart.write(self.Tx1)
-            #sleep_ms(10)
             self.uart.readinto(self.buffer)
             #print(self.buffer.hex())
-            if self.Rx1.hex() in self.buffer.hex():
+            if self.Rx1 in self.buffer:
                 self.status += 'OK'
                 print('OK')
                 break
-            else:
-                self.buffer[:] = b'\x00' * len(self.buffer)  # Clear buffer
-                sleep_ms(300)
-                # Try again
+            self.buffer[:] = b'\x00' * len(self.buffer)  # Clear buffer
+            sleep_ms(200)
         else:
             self.status += 'FAILED'
             print('FAILED')
