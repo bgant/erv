@@ -62,9 +62,12 @@ class VTTOUCHW:
             self.sent = self.uart.write(self.Tx1)
             self.uart.readinto(self.buffer)
             if self.Rx1 in self.buffer:
-                self.status += 'OK'
-                print('OK')
-                break
+                if i == 0: # Three times I have seen .OK and the ERV mode did not change
+                    pass   # Ignore first attemp even if it is successful
+                else:
+                    self.status += 'OK'
+                    print('OK')
+                    break
             self.buffer[:] = b'\x00' * len(self.buffer)  # Clear buffer
             sleep_ms(250)
         else:
