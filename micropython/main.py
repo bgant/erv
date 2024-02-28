@@ -1,6 +1,6 @@
 '''
 mpremote a0 mip install --target= github:bgant/erv/micropython/vttouchw.py
-mpremote a0 mip install --target= github:bgant/micropython/projects/control_erv/main.py
+mpremote a0 mip install --target= github:bgant/erv/micropython/main.py
 mpremote a0 mip install --target= github:bgant/micropython/modules/wifi.py
 mpremote a0 mip install --target= github:bgant/micropython/modules/key_store.py
 mpremote a0 mip install --target= github:bgant/micropython/modules/timezone.py
