@@ -22,7 +22,7 @@ wifi.connect()
 from vttouchw import VTTOUCHW
 from OpenWeatherMap import WEATHER
 from AirNowAPI import AQI
-#from pms7003 import PM7003 
+#from PMS7003 import PMS7003 
 from utime import localtime
 from timezone import tz
 
