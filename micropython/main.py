@@ -34,6 +34,7 @@ class PROJECT:
         self.erv = VTTOUCHW()
         self.weather = WEATHER()
         self.aqi = AQI()
+        self.PM_EPA = self.aqi.download('PM')  # Download on boot
         #self.pms7003 = PMS7003()
 
         # Thresholds
