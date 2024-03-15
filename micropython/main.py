@@ -29,11 +29,12 @@ from timezone import tz
 main_interval = 300000   # Minutes between Timer loops
 
 class PROJECT:
+    '''Main project script run by Timer'''
     def __init__(self):
         self.erv = VTTOUCHW()
         self.weather = WEATHER()
-        self.PM_EPA = AQI('PM')
-        #self.PM_Local = PMS7003()
+        self.aqi = AQI()
+        #self.pms7003 = PMS7003()
 
         # Thresholds
         self.night_start = 20  # ERV  on after 8PM
@@ -43,11 +44,9 @@ class PROJECT:
         self.high_aqi    = 100 # ERV off above 100 PM2.5
 
     def night(self):
-        '''
-        Is it night right now?
-        '''
-        self.night_hours = [h % 24 for h in range(self.night_start,self.night_end+24)]  # 8PM to 7AM
-        if localtime(tz())[3] in self.night_hours:
+        '''Is it night right now?'''
+        night_hours = [h % 24 for h in range(self.night_start,self.night_end+24)]  # 8PM to 7AM
+        if localtime(tz())[3] in night_hours:
             print('OFF: Nighttime')
             return True
         else:
@@ -55,28 +54,24 @@ class PROJECT:
             return False
 
     def outside_too_hot_or_cold(self):
-        '''
-        Is it too hot or cold outside right now?
-        '''
-        self.response = self.weather.download('temp')
-        if self.response:
-            if (self.response < self.too_cold) or (self.response > self.too_hot):
-                print(f'OFF: Too hot or cold at {self.response}F')
+        '''Is it too hot or cold outside right now?'''
+        self.outside_temp = self.weather.download('temp')
+        if self.outside_temp:
+            if (self.outside_temp < self.too_cold) or (self.outside_temp > self.too_hot):
+                print(f'OFF: Too hot or cold at {self.outside_temp:.0f}F')
                 return True
             else:
-                print(f'OK:  Outside temperature is good at {self.response}F')
+                print(f'OK:  Outside temperature is good at {self.outside_temp:.0f}F')
                 return False
         else:
-            print(f'ERROR: API Response is {self.response}')
+            print(f'ERROR: API Response is {self.outside_temp}')
             return False
 
     def epa_aqi_bad(self):
-        '''
-        Is the EPA Air Quality Index too high right now?
-        '''
+        '''Is the EPA Air Quality Index too high right now?'''
         if 20 < localtime(tz())[4] < 30:
             # Data updates about 10 to 30 minutes after each hour
-            self.PM_EPA = AQI('PM')
+            self.PM_EPA = self.aqi.download('PM')
         if not self.PM_EPA:
             print(f'ON:  EPA Air Quality Unknown (no data from API)') 
             return False
@@ -88,10 +83,8 @@ class PROJECT:
             return False
 
     def local_aqi_bad(self):
-        '''
-        Is the outside Air Quality device to high right now? (neighbors burning leaves?)
-        '''
-        # self.PM_Local = PMS7003()
+        '''Is the outside Air Quality device to high right now? (neighbors burning leaves?)'''
+        # self.PM_Local = self.pms7003.check()
         # if self.PM_Local > self.high_aqi:
         #     print(f'OFF: Local Air Quality is too high at {self.PM_Local}')
         #     return True    
@@ -102,9 +95,7 @@ class PROJECT:
         return False
     
     def control(self):
-        '''
-        Check everything and decide whether to turn ERV On or Off
-        '''
+        '''Check everything and decide whether to turn ERV On or Off'''
         if self.night():
             self.standby()
         elif not self.local_aqi_bad() and not self.epa_aqi_bad() and not self.outside_too_hot_or_cold():
@@ -115,17 +106,19 @@ class PROJECT:
             self.standby()
 
     def smart(self):
+        '''Change ERV mode to Smart'''
         if (self.erv.state == 'smart') and ('OK' in self.erv.status):
             print('ERV already in Smart mode')
         else:
-            print('Setting ERV to Smart mode...')
+            print('Setting ERV to Smart mode ', end='')
             self.erv.smart()    # Turn ON ERV
 
     def standby(self):
+        '''Change ERV mode to Standby'''
         if (self.erv.state == 'standby') and ('OK' in self.erv.status):
             print('ERV already in Standby mode.')
         else:
-            print('Setting ERV to Standby Mode...')
+            print('Setting ERV to Standby mode ', end='')
             self.erv.standby()  # Turn OFF ERV
 
 
