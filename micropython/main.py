@@ -38,8 +38,8 @@ class PROJECT:
         #self.pms7003 = PMS7003()
 
         # Thresholds
-        self.night_start = 20  # ERV  on after 8PM
-        self.night_end   =  7  # ERV off after 7AM
+        self.night_end   =  6  # ERV  on after 6AM
+        self.night_start = 21  # ERV off after 9PM
         self.too_cold    = 32  # ERV off below 32F
         self.too_hot     = 90  # ERV off above 90F
         self.high_aqi    = 100 # ERV off above 100 PM2.5
