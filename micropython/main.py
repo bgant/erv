@@ -38,6 +38,8 @@ class PROJECT:
         #self.pms7003 = PMS7003()
 
         # Thresholds
+        self.spring      = 106 # Beginning of Summer Hours (Apr 15)
+        self.fall        = 289 # Beginning of Winter Hours (Oct 15)
         self.night_end   =  6  # ERV  on after 6AM
         self.night_start = 21  # ERV off after 9PM
         self.too_cold    = 32  # ERV off below 32F
@@ -47,11 +49,14 @@ class PROJECT:
     def night(self):
         '''Is it night right now?'''
         night_hours = [h % 24 for h in range(self.night_start,self.night_end+24)]  # 8PM to 7AM
-        if localtime(tz())[3] in night_hours:
-            print('OFF: Nighttime')
+        if self.spring < localtime(tz())[7] < self.fall:
+            print('OK:  Run 24x7 in Summer')
+            return False
+        elif localtime(tz())[3] in night_hours:
+            print('OFF: Winter Nighttime')
             return True
         else:
-            print('OK:  Daytime')
+            print('OK:  Winter Daytime')
             return False
 
     def outside_too_hot_or_cold(self):
@@ -100,10 +105,10 @@ class PROJECT:
         if self.night():
             self.standby()
         elif not self.local_aqi_bad() and not self.epa_aqi_bad() and not self.outside_too_hot_or_cold():
-            print('OK:  Daytime checks Passed')
+            print('OK:  All Checks Passed')
             self.smart()
         else:
-            print('OFF: Daytime checks Failed')
+            print('OFF: One or More Checks Failed')
             self.standby()
 
     def smart(self):
