@@ -41,22 +41,22 @@ class PROJECT:
         self.spring      = 106 # Beginning of Summer Hours (Apr 15)
         self.fall        = 289 # Beginning of Winter Hours (Oct 15)
         self.night_end   =  6  # ERV  on after 6AM
-        self.night_start = 21  # ERV off after 9PM
+        self.night_start = 22  # ERV off after 10PM
         self.too_cold    = 32  # ERV off below 32F
         self.too_hot     = 90  # ERV off above 90F
         self.high_aqi    = 100 # ERV off above 100 PM2.5
 
     def night(self):
         '''Is it night right now?'''
-        night_hours = [h % 24 for h in range(self.night_start,self.night_end+24)]  # 8PM to 7AM
-        if self.spring < localtime(tz())[7] < self.fall:
-            print('OK:  Run 24x7 in Summer')
-            return False
-        elif localtime(tz())[3] in night_hours:
-            print('OFF: Winter Nighttime')
+        self.night_hours = [h % 24 for h in range(self.night_start,self.night_end+24)]
+        #if self.spring < localtime(tz())[7] < self.fall:
+        #    print('OK:  Run 24x7 in Summer')
+        #    return False
+        if localtime(tz())[3] in self.night_hours:
+            print('OFF: Nighttime')
             return True
         else:
-            print('OK:  Winter Daytime')
+            print('OK:  Daytime')
             return False
 
     def outside_too_hot_or_cold(self):
