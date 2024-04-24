@@ -7,6 +7,7 @@ mpremote a0 mip install --target= github:bgant/micropython/modules/timezone.py
 mpremote a0 mip install --target= github:bgant/micropython/modules/AirNowAPI.py
 mpremote a0 mip install --target= github:bgant/micropython/modules/OpenWeatherMap.py
 mpremote a0 mip install --target= github:bgant/micropython/modules/PMS7003.py
+mpremote a0 mip install --target= github:bgant/micropython/modules/webdis.py
 '''
 
 # Initialize Watchdog Timer
@@ -20,11 +21,15 @@ wifi.connect()
 
 # Import Project Specific Modules
 from vttouchw import VTTOUCHW
-from OpenWeatherMap import WEATHER
-from AirNowAPI import AQI
-#from PMS7003 import PMS7003 
 from utime import localtime
 from timezone import tz
+
+# If hitting remote API's directly
+from OpenWeatherMap import WEATHER
+#from AirNowAPI import AQI
+
+# If using locally cached Redis/Webdis data
+from webdis import WEBDIS
 
 main_interval = 300000   # Minutes between Timer loops
 
@@ -33,9 +38,10 @@ class PROJECT:
     def __init__(self):
         self.erv = VTTOUCHW()
         self.weather = WEATHER()
-        self.aqi = AQI()
-        self.PM_EPA = self.aqi.download('PM')  # Download on boot
+        #self.aqi = AQI()
+        #self.PM_EPA = self.aqi.download('PM')  # Download on boot
         #self.pms7003 = PMS7003()
+        self.webdis = WEBDIS()
 
         # Thresholds
         self.spring      = 106 # Beginning of Summer Hours (Apr 15)
@@ -75,9 +81,11 @@ class PROJECT:
 
     def epa_aqi_bad(self):
         '''Is the EPA Air Quality Index too high right now?'''
-        if 20 < localtime(tz())[4] < 30:
+        #if 20 < localtime(tz())[4] < 30:
             # Data updates about 10 to 30 minutes after each hour
-            self.PM_EPA = self.aqi.download('PM')
+            #self.PM_EPA = self.aqi.download('PM')
+        self.webdis.get('json-epa-aqi')
+        self.PM_EPA = self.webdis.response_json[0]['AQI']
         if not self.PM_EPA:
             print(f'ON:  EPA Air Quality Unknown (no data from API)') 
             return False
