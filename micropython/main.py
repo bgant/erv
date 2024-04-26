@@ -21,11 +21,11 @@ wifi.connect()
 
 # Import Project Specific Modules
 from vttouchw import VTTOUCHW
-from utime import localtime
+from utime import localtime, sleep
 from timezone import tz
 
 # If hitting remote API's directly
-from OpenWeatherMap import WEATHER
+#from OpenWeatherMap import WEATHER
 #from AirNowAPI import AQI
 
 # If using locally cached Redis/Webdis data
@@ -37,11 +37,12 @@ class PROJECT:
     '''Main project script run by Timer'''
     def __init__(self):
         self.erv = VTTOUCHW()
-        self.weather = WEATHER()
+        #self.weather = WEATHER()
         #self.aqi = AQI()
         #self.PM_EPA = self.aqi.download('PM')  # Download on boot
         #self.pms7003 = PMS7003()
-        self.webdis = WEBDIS()
+        self.temp = WEBDIS()
+        self.aqi = WEBDIS()
 
         # Thresholds
         self.spring      = 106 # Beginning of Summer Hours (Apr 15)
@@ -67,7 +68,9 @@ class PROJECT:
 
     def outside_too_hot_or_cold(self):
         '''Is it too hot or cold outside right now?'''
-        self.outside_temp = self.weather.download('temp')
+        #self.outside_temp = self.weather.download('temp')
+        self.temp.get('nws-temperature')  # Get temperature from local Redis/Webdis server
+        self.outside_temp = int(self.temp.response_text)
         if self.outside_temp:
             if (self.outside_temp < self.too_cold) or (self.outside_temp > self.too_hot):
                 print(f'OFF: Too hot or cold at {self.outside_temp:.0f}F')
@@ -84,8 +87,8 @@ class PROJECT:
         #if 20 < localtime(tz())[4] < 30:
             # Data updates about 10 to 30 minutes after each hour
             #self.PM_EPA = self.aqi.download('PM')
-        self.webdis.get('json-epa-aqi')
-        self.PM_EPA = self.webdis.response_json[0]['AQI']
+        self.aqi.get('json-epa-aqi')  # Get AQI from local Redis/Webdis server
+        self.PM_EPA = self.aqi.response_json[0]['AQI']
         if not self.PM_EPA:
             print(f'ON:  EPA Air Quality Unknown (no data from API)') 
             return False
