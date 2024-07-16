@@ -120,17 +120,17 @@ class PROJECT:
         try:
             self.local_aqi.timeseriesget('webdis-local-aqi-average')
             aqi_timestamp = int(self.local_aqi.response_text[0]/1000) - 946684800  #13-digit Unix to 9-digit Micropython
-            self.local_aqi = float(self.local_aqi.response_text[1])
+            self.aqi_local_number = float(self.local_aqi.response_text[1])
         except:
             print('ERROR: Failed to access Local AQI data')
             return False
 
         if (time() - aqi_timestamp) < 180:  # AQI is recent?
-            if self.local_aqi >= self.high_local_aqi:
-                print(f'OFF: Local Air Quality is too high at {self.local_aqi:.0f}')
+            if self.aqi_local_number >= self.high_local_aqi:
+                print(f'OFF: Local Air Quality is too high at {self.aqi_local_number:.0f}')
                 return True
             else:
-                print(f'OK:  Local Air Quality is good at {self.local_aqi:.0f}')
+                print(f'OK:  Local Air Quality is good at {self.aqi_local_number:.0f}')
                 return False
         else:
             print('OK:  Ignoring... No recent Local AQI data')
