@@ -42,6 +42,7 @@ class PROJECT:
         self.temp = WEBDIS()
         self.epa_aqi = WEBDIS()
         self.local_aqi = WEBDIS()
+        self.upload_data = WEBDIS()
 
         # Thresholds
         self.spring         = 106  # Beginning of Summer Hours (Apr 15)
@@ -147,6 +148,7 @@ class PROJECT:
             print('OFF: One or More Checks Failed')
             self.standby()
         print()
+        self.upload_erv_state()
 
     def smart(self):
         '''Change ERV mode to Smart'''
@@ -164,6 +166,12 @@ class PROJECT:
             print('Setting ERV to Standby mode ', end='')
             self.erv.standby()  # Turn OFF ERV
 
+    def upload_erv_state(self):
+        if self.erv.state == 'standby':
+            self.upload_data.timeseries('webdis-erv-state',0)
+        if self.erv.state == 'smart':
+            self.upload_data.timeseries('webdis-erv-state',1)
+        
 
 project = PROJECT()
 timer_main = Timer(0)
