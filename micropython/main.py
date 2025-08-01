@@ -75,7 +75,7 @@ class PROJECT:
         # Using local Webdis/Redis:
         try:
             self.temp.get('nws-temperature')  # Get temperature from local Redis/Webdis server
-            self.outside_temp = int(self.temp.response_text)
+            self.outside_temp = float(self.temp.response_text)
         except:
             print('ERROR: Failed to access National Weather Service data')
             return False 
@@ -99,8 +99,8 @@ class PROJECT:
 
         # Using local Webdis/Redis:
         try:
-            self.epa_aqi.get('json-epa-aqi')
-            self.PM_EPA = self.epa_aqi.response_json[0]['AQI']
+            self.epa_aqi.get('epa-aqi')
+            self.PM_EPA = int(self.epa_aqi.response_text)
         except:
             print('ERROR: Failed to access EPA AQI data')
             return False
@@ -120,13 +120,13 @@ class PROJECT:
         # Using local Webdis/Redis:
         try:
             self.local_aqi.timeseriesget('webdis-local-aqi-average')
-            aqi_timestamp = int(self.local_aqi.response_text[0]/1000) - 946684800  #13-digit Unix to 9-digit Micropython
+            self.aqi_timestamp = int(self.local_aqi.response_text[0]/1000) - 946684800  #13-digit Unix to 9-digit Micropython
             self.aqi_local_number = float(self.local_aqi.response_text[1])
         except:
             print('ERROR: Failed to access Local AQI data')
             return False
 
-        if (time() - aqi_timestamp) < 180:  # AQI is recent?
+        if (time() - self.aqi_timestamp) < 300:  # AQI is recent? less than 5 min
             if self.aqi_local_number >= self.high_local_aqi:
                 print(f'OFF: Local Air Quality is too high at {self.aqi_local_number:.0f}')
                 return True
